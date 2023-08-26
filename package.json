@@ -1,0 +1,19 @@
+{
+  "name": "backend-serverless-provisionedconcurrency",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "type": "module",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nfrasson/backend-serverless-provisionedConcurrency.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nfrasson/backend-serverless-provisionedConcurrency/issues"
+  },
+  "homepage": "https://github.com/nfrasson/backend-serverless-provisionedConcurrency#readme"
+}

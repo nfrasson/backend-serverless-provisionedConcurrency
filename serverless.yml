@@ -1,0 +1,40 @@
+service: serverless-provisioned-concurrency
+frameworkVersion: "^3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  memorySize: 256
+  timeout: 10
+  stage: dev
+  region: sa-east-1
+  logRetentionInDays: 1
+  versionFunctions: false
+  apiGateway:
+    shouldStartNameWithService: true
+  environment:
+    MONGODB_URI: ${ssm:backend-serverless-caching-dev-mongodb}
+
+layers:
+  layerCommon:
+    path: layers/layerCommon
+    name: ${self:service}-${self:provider.stage}-layer-common
+
+package:
+  patterns:
+    - "!node_modules/**"
+    - "!package-lock.json"
+    - "!package.json"
+    - "!layers/**"
+
+functions:
+  listCourses:
+    handler: serverless/functions/Course/listCourses.handler
+    provisionedConcurrency: 1
+    layers:
+      - { Ref: LayerCommonLambdaLayer }
+    events:
+      - http:
+          path: /courses
+          method: get
+          cors: true
