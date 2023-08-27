@@ -9,7 +9,7 @@ provider:
   stage: dev
   region: sa-east-1
   logRetentionInDays: 1
-  versionFunctions: false
+  architecture: arm64
   apiGateway:
     shouldStartNameWithService: true
   environment:
@@ -28,13 +28,23 @@ package:
     - "!layers/**"
 
 functions:
-  listCourses:
+  listCoursesProvisioned:
     handler: serverless/functions/Course/listCourses.handler
-    provisionedConcurrency: 1
+    provisionedConcurrency: 5
     layers:
       - { Ref: LayerCommonLambdaLayer }
     events:
       - http:
-          path: /courses
+          path: /courses/with-provisioned-concurrency
+          method: get
+          cors: true
+
+  listCoursesNoProvisioned:
+    handler: serverless/functions/Course/listCourses.handler
+    layers:
+      - { Ref: LayerCommonLambdaLayer }
+    events:
+      - http:
+          path: /courses/without-provisioned-concurrency
           method: get
           cors: true
