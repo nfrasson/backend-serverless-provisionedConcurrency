@@ -6,8 +6,7 @@ const CourseSchema = new Schema(
     courseID: { type: String, unique: true, index: true },
     courseTitle: String,
     courseDescription: String,
-    deletedAt: Date,
-    createdAt: Date,
+    courseDeletedAt: Date,
   },
   {
     collection: "course",

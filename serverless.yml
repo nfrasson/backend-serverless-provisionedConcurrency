@@ -1,9 +1,21 @@
 service: serverless-provisioned-concurrency
 frameworkVersion: "^3"
 
+plugins:
+  - serverless-api-gateway-caching
+
 params:
   default:
     defaultResourceName: ${self:service}-${self:provider.stage}
+
+custom:
+  apiGatewayCaching:
+    enabled: true
+    clusterSize: "0.5"
+    ttlInSeconds: 3600
+    dataEncrypted: false
+    perKeyInvalidation:
+      requireAuthorization: false
 
 provider:
   name: aws
@@ -14,13 +26,30 @@ provider:
   timeout: 10
   memorySize: 256
   logRetentionInDays: 1
+  layers:
+    - { Ref: LayerCommonLambdaLayer }
   apiGateway:
     shouldStartNameWithService: true
   environment:
+    STAGE: ${self:provider.stage}
+    API_GATEWAY_ID: !Ref ApiGatewayRestApi
     MONGODB_URI: ${ssm:${param:defaultResourceName}-mongodb}
   iam:
     role:
       name: ${param:defaultResourceName}-lambda-role
+      statements:
+        - Effect: "Allow"
+          Action: "apigateway:DELETE"
+          Resource:
+            - Fn::Join:
+                - ""
+                - - "arn:aws:apigateway:"
+                  - ${self:provider.region}
+                  - "::/restapis/"
+                  - { Ref: ApiGatewayRestApi }
+                  - "/stages/"
+                  - ${self:provider.stage}
+                  - "/cache/data"
   vpc:
     securityGroupIds:
       - ${ssm:${param:defaultResourceName}-securityGroupId}
@@ -42,23 +71,42 @@ package:
     - "!layers/**"
 
 functions:
-  listCoursesProvisioned:
+  listCourses:
     handler: serverless/functions/Course/listCourses.handler
-    provisionedConcurrency: 5
-    layers:
-      - { Ref: LayerCommonLambdaLayer }
     events:
       - http:
-          path: /courses/with-provisioned-concurrency
+          path: /courses
           method: get
           cors: true
+          caching:
+            enabled: true
 
-  listCoursesNoProvisioned:
-    handler: serverless/functions/Course/listCourses.handler
-    layers:
-      - { Ref: LayerCommonLambdaLayer }
+  readCourse:
+    handler: serverless/functions/Course/readCourse.handler
     events:
       - http:
-          path: /courses/without-provisioned-concurrency
+          path: /course/{courseID}
           method: get
+          cors: true
+          caching:
+            enabled: true
+            cacheKeyParameters:
+              - name: request.path.courseID
+
+  updateCourse:
+    handler: serverless/functions/Course/updateCourse.handler
+    provisionedConcurrency: 5
+    events:
+      - http:
+          path: /course/{courseID}
+          method: patch
+          cors: true
+
+  createCourse:
+    handler: serverless/functions/Course/createCourse.handler
+    provisionedConcurrency: 5
+    events:
+      - http:
+          path: /course
+          method: post
           cors: true

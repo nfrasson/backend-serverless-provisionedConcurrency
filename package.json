@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nfrasson/backend-serverless-provisionedConcurrency/issues"
   },
-  "homepage": "https://github.com/nfrasson/backend-serverless-provisionedConcurrency#readme"
+  "homepage": "https://github.com/nfrasson/backend-serverless-provisionedConcurrency#readme",
+  "devDependencies": {
+    "serverless-api-gateway-caching": "^1.10.2"
+  }
 }

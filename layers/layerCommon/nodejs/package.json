@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-api-gateway": "^3.398.0",
     "aws4": "^1.12.0",
+    "joi": "^17.10.0",
     "mongoose": "^7.4.5"
   }
 }

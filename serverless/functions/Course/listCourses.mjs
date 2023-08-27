@@ -1,20 +1,13 @@
 import { CourseModel } from "../../commons/database/index.mjs";
+import { Logger, lambdaProcessor } from "../../commons/utils/index.mjs";
 
-export const handler = async (event) => {
-  try {
-    console.log("EVENT", event);
-    
-    const courses = await CourseModel.find({ deletedAt: null });
+const $logger = new Logger("function:Course:listCourses");
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(courses),
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify(error),
-    };
-  }
-};
+export const handler = lambdaProcessor(async () => {
+  const courses = await CourseModel.find({ deletedAt: null });
+
+  return {
+    statusCode: 200,
+    body: courses,
+  };
+}, $logger);
