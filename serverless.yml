@@ -1,24 +1,38 @@
 service: serverless-provisioned-concurrency
 frameworkVersion: "^3"
 
+params:
+  default:
+    defaultResourceName: ${self:service}-${self:provider.stage}
+
 provider:
   name: aws
-  runtime: nodejs18.x
-  memorySize: 256
-  timeout: 10
   stage: dev
   region: sa-east-1
-  logRetentionInDays: 1
+  runtime: nodejs18.x
   architecture: arm64
+  timeout: 10
+  memorySize: 256
+  logRetentionInDays: 1
   apiGateway:
     shouldStartNameWithService: true
   environment:
-    MONGODB_URI: ${ssm:backend-serverless-caching-dev-mongodb}
+    MONGODB_URI: ${ssm:${param:defaultResourceName}-mongodb}
+  iam:
+    role:
+      name: ${param:defaultResourceName}-lambda-role
+  vpc:
+    securityGroupIds:
+      - ${ssm:${param:defaultResourceName}-securityGroupId}
+    subnetIds:
+      - ${ssm:${param:defaultResourceName}-subnetId-1a}
+      - ${ssm:${param:defaultResourceName}-subnetId-1b}
+      - ${ssm:${param:defaultResourceName}-subnetId-1c}
 
 layers:
   layerCommon:
     path: layers/layerCommon
-    name: ${self:service}-${self:provider.stage}-layer-common
+    name: ${param:defaultResourceName}-layer-common
 
 package:
   patterns:
